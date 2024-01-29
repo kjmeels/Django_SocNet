@@ -1,4 +1,4 @@
-from django.contrib.admin import register, ModelAdmin  # верный импорт?
+from django.contrib.admin import register, ModelAdmin
 
 from .models import City
 
