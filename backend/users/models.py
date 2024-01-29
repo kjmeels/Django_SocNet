@@ -17,8 +17,25 @@ class User(AbstractUser):
     birth_date = models.DateField(verbose_name="Дата рождения", null=True, blank=True)
 
     def __str__(self):
-        return self.full_name
+        return self.username
 
     class Meta:
         verbose_name: str = "Пользователь"
         verbose_name_plural: str = "Пользователи"
+
+
+class Photo(models.Model):
+    photo = models.ImageField(upload_to="u/u/p", verbose_name="Фото", null=True, blank=True)
+    user = models.ForeignKey(
+        "users.User",
+        on_delete=models.CASCADE,
+        related_name="user_photos",
+        verbose_name="Пользователь",
+    )
+
+    def __str__(self):
+        return f"photo {self.user.username} - {self.id}"
+
+    class Meta:
+        verbose_name: str = "Фотография"
+        verbose_name_plural: str = "Фотографии"
