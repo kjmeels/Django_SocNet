@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from users.models import User
+from .models import User, News
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -16,4 +16,17 @@ class UserSerializer(serializers.ModelSerializer):
             "age",
             "gender",
             "birth_date",
+        )
+
+
+class NewsSerializer(serializers.ModelSerializer):
+    """Сериализатор новостей."""
+
+    class Meta:
+        model = News
+        fields = (
+            "user",
+            "text",
+            "created_at",
+            "image",
         )
