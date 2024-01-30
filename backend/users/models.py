@@ -15,6 +15,9 @@ class User(AbstractUser):
         max_length=50, verbose_name="Пол", choices=GenderChoices.choices, default=GenderChoices.MALE
     )
     birth_date = models.DateField(verbose_name="Дата рождения", null=True, blank=True)
+    languages = models.ManyToManyField(
+        "languages.Language", verbose_name="Языки", related_name="users", blank=True
+    )
 
     def __str__(self):
         return self.full_name
