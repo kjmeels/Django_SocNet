@@ -3,8 +3,18 @@ from rest_framework import serializers
 from users.models import User, Photo
 
 
+class PhotoSerializer(serializers.ModelSerializer):
+    """Сериализатор фотографий"""
+
+    class Meta:
+        model = Photo
+        fields = ("photo",)
+
+
 class UserSerializer(serializers.ModelSerializer):
     """Сериализатор пользователей."""
+
+    user_photos = PhotoSerializer(many=True)
 
     class Meta:
         model = User
@@ -16,15 +26,5 @@ class UserSerializer(serializers.ModelSerializer):
             "age",
             "gender",
             "birth_date",
-        )
-
-
-class PhotoSerializer(serializers.ModelSerializer):
-    """Сериализатор фотографий"""
-
-    class Meta:
-        model = Photo
-        fields = (
-            "photo",
-            "user",
+            "user_photos",
         )

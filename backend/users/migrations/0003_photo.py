@@ -6,22 +6,39 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('users', '0002_user_age_user_birth_date_user_city_user_gender_and_more'),
+        ("users", "0002_user_age_user_birth_date_user_city_user_gender_and_more"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Photo',
+            name="Photo",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('photo', models.ImageField(blank=True, null=True, upload_to='u/u/p', verbose_name='Фото')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='user_photos', to=settings.AUTH_USER_MODEL, verbose_name='Пользователь')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                (
+                    "photo",
+                    models.ImageField(
+                        blank=True, null=True, upload_to="u/u/p", verbose_name="Фото"
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="user_photos",
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="Пользователь",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Фотография',
-                'verbose_name_plural': 'Фотографии',
+                "verbose_name": "Фотография",
+                "verbose_name_plural": "Фотографии",
             },
         ),
     ]

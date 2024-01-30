@@ -8,5 +8,5 @@ from .serializers import UserSerializer
 class UserViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericViewSet):
     """ViewSet пользователя"""
 
-    queryset = User.objects.all()
+    queryset = User.objects.all().prefetch_related("user_photos")
     serializer_class = UserSerializer
