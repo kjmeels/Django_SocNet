@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # apps
     "users.apps.UserConfig",
+    "cities.apps.CitiesConfig",
     # packages
     "rest_framework",
 ]

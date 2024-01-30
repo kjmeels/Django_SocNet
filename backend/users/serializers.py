@@ -15,6 +15,7 @@ class UserSerializer(serializers.ModelSerializer):
     """Сериализатор пользователей."""
 
     user_photos = PhotoSerializer(many=True)
+    city = serializers.CharField(source="city.name")
 
     class Meta:
         model = User
