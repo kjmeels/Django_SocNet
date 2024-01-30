@@ -17,6 +17,8 @@ class UserSerializer(serializers.ModelSerializer):
     user_photos = PhotoSerializer(many=True)
     city = serializers.CharField(source="city.name")
 
+    languages = serializers.SerializerMethodField()
+
     class Meta:
         model = User
         fields = (
@@ -28,4 +30,8 @@ class UserSerializer(serializers.ModelSerializer):
             "gender",
             "birth_date",
             "user_photos",
+            "languages",
         )
+
+    def get_languages(self, obj):
+        return obj.languages.values_list("language_name", flat=True)
