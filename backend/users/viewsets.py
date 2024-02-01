@@ -2,7 +2,7 @@ from rest_framework import mixins
 from rest_framework.viewsets import GenericViewSet
 
 from .models import User
-from .serializers import UserSerializer, UserNewsRetrieveSerializer
+from .serializers import UserSerializer, UserRetrieveSerializer
 
 
 class UserViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericViewSet):
@@ -10,7 +10,7 @@ class UserViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericViewS
 
     def get_serializer_class(self):
         if self.action == "retrieve":
-            return UserNewsRetrieveSerializer
+            return UserRetrieveSerializer
         return UserSerializer
 
     def get_queryset(self):

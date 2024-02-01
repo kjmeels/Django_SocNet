@@ -36,11 +36,13 @@ class TestUserViewSet(APITestCase):
         users_photo = [PhotoFactory(user=user) for user in users for _ in range(5)]
         languages = [LanguageFactory() for _ in range(5)]
         user_news = [NewsFactory(user=user) for user in users for _ in range(5)]
+        user_friends = [UserFactory() for _ in range(10)]
 
         for user in users:
             user.languages.set(languages)
+            user.friends.set(user_friends)
 
-        with self.assertNumQueries(4):
+        with self.assertNumQueries(5):
             res = self.client.get(self.detail_url(kwargs={"pk": users[2].id}))
 
         res_json = res.json()
@@ -49,3 +51,4 @@ class TestUserViewSet(APITestCase):
         self.assertEqual(len(res_json["user_photos"]), len(users_photo) / len(users))
         self.assertEqual(len(res_json["languages"]), len(languages))
         self.assertEqual(len(res_json["user_news"]), len(user_news) / len(users))
+        self.assertEqual(len(res_json["friends"]), len(user_friends))

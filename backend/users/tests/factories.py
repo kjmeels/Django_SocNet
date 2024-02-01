@@ -8,7 +8,7 @@ from ..models import User, Photo, News
 
 
 class UserFactory(DjangoModelFactory):
-    username = factory.Faker("word")
+    username = factory.Sequence(lambda x: f"user_{x}")
     full_name = factory.Faker("word")
     image = factory.django.ImageField(filename="test.png")
     city = factory.SubFactory(CityFactory)

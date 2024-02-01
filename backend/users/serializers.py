@@ -53,13 +53,24 @@ class NewsSerializer(serializers.ModelSerializer):
         )
 
 
-class UserNewsRetrieveSerializer(serializers.ModelSerializer):
+class UserFriendsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            "id",
+            "full_name",
+            "image",
+        )
+
+
+class UserRetrieveSerializer(serializers.ModelSerializer):
     """Сериализатор пользователя с новостями."""
 
     user_photos = PhotoSerializer(many=True)
     city = serializers.SerializerMethodField()
     languages = LanguageSerializer(many=True)
     user_news = NewsSerializer(many=True)
+    friends = UserFriendsSerializer(many=True)
 
     class Meta:
         model = User
@@ -74,6 +85,7 @@ class UserNewsRetrieveSerializer(serializers.ModelSerializer):
             "user_photos",
             "languages",
             "user_news",
+            "friends",
         )
 
     def get_city(self, obj):

@@ -5,7 +5,7 @@ from .constants import GenderChoices
 
 
 class User(AbstractUser):
-    full_name = models.CharField(max_length=50, verbose_name="Имя пользователя")
+    full_name = models.CharField(max_length=50, verbose_name="Псевдоним")
     image = models.ImageField(
         upload_to="u/u/i", verbose_name="Фото пользователя", null=True, blank=True
     )
@@ -24,6 +24,12 @@ class User(AbstractUser):
     birth_date = models.DateField(verbose_name="Дата рождения", null=True, blank=True)
     languages = models.ManyToManyField(
         "languages.Language", verbose_name="Языки", related_name="users", blank=True
+    )
+    friends = models.ManyToManyField(
+        "users.User",
+        verbose_name="Друзья",
+        related_name="user_friends",
+        blank=True,
     )
 
     def __str__(self):
