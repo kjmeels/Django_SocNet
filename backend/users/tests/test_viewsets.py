@@ -14,6 +14,7 @@ class TestUserViewSet(APITestCase):
     def setUp(self):
         self.list_url: str = reverse("users-list")
         self.detail_url = partial(reverse, "users-detail")
+        self.get_my_page_url = reverse("users-get-my-page")
 
     def test_user_list(self):
         users = [UserFactory() for _ in range(5)]
@@ -51,4 +52,32 @@ class TestUserViewSet(APITestCase):
         self.assertEqual(len(res_json["user_photos"]), len(users_photo) / len(users))
         self.assertEqual(len(res_json["languages"]), len(languages))
         self.assertEqual(len(res_json["user_news"]), len(user_news) / len(users))
+        self.assertEqual(len(res_json["friends"]), len(user_friends))
+
+    def test_my_page(self):
+        user = UserFactory()
+        user_photos = [PhotoFactory(user=user) for _ in range(10)]
+        languages = [LanguageFactory() for _ in range(10)]
+        user_news = [NewsFactory(user=user) for _ in range(10)]
+        user_friends = [UserFactory() for _ in range(10)]
+
+        user.languages.set(languages)
+        user.friends.set(user_friends)
+
+        with self.assertNumQueries(0):
+            res = self.client.get(self.get_my_page_url)
+
+        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        self.client.force_authenticate(user=user)
+
+        with self.assertNumQueries(5):
+            res = self.client.get(self.get_my_page_url)
+
+        res_json = res.json()
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res_json["id"], user.pk)
+        self.assertEqual(len(res_json["user_photos"]), len(user_photos))
+        self.assertEqual(len(res_json["languages"]), len(languages))
+        self.assertEqual(len(res_json["user_news"]), len(user_news))
         self.assertEqual(len(res_json["friends"]), len(user_friends))
