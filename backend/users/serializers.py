@@ -16,7 +16,12 @@ class UserSerializer(serializers.ModelSerializer):
     """Сериализатор пользователей."""
 
     user_photos = PhotoSerializer(many=True)
-    city = serializers.CharField(source="city.name")
+    city = serializers.SerializerMethodField()
+
+    def get_city(self, obj):
+        if obj.city:
+            return obj.city.name
+        return None
 
     languages = LanguageSerializer(many=True)
 
@@ -46,3 +51,32 @@ class NewsSerializer(serializers.ModelSerializer):
             "created_at",
             "image",
         )
+
+
+class UserNewsRetrieveSerializer(serializers.ModelSerializer):
+    """Сериализатор пользователя с новостями."""
+
+    user_photos = PhotoSerializer(many=True)
+    city = serializers.SerializerMethodField()
+    languages = LanguageSerializer(many=True)
+    user_news = NewsSerializer(many=True)
+
+    class Meta:
+        model = User
+        fields = (
+            "id",
+            "full_name",
+            "image",
+            "city",
+            "age",
+            "gender",
+            "birth_date",
+            "user_photos",
+            "languages",
+            "user_news",
+        )
+
+    def get_city(self, obj):
+        if obj.city:
+            return obj.city.name
+        return None

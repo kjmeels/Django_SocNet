@@ -4,7 +4,7 @@ from factory.django import DjangoModelFactory
 
 from cities.tests.factories import CityFactory
 from ..constants import GenderChoices
-from ..models import User, Photo
+from ..models import User, Photo, News
 
 
 class UserFactory(DjangoModelFactory):
@@ -26,3 +26,13 @@ class PhotoFactory(DjangoModelFactory):
 
     class Meta:
         model = Photo
+
+
+class NewsFactory(DjangoModelFactory):
+    text = factory.Faker("word")
+    user = factory.SubFactory(UserFactory)
+    created_at = factory.Faker("date")
+    image = factory.django.ImageField(filename="test.png")
+
+    class Meta:
+        model = News

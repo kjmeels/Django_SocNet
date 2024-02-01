@@ -64,7 +64,7 @@ class News(models.Model):
     image = models.ImageField(upload_to="u/u/n", verbose_name="Фото", null=True, blank=True)
 
     def __str__(self):
-        return f" Новость {self.user.username} - {self.id}"
+        return f"Новость {self.id} - {self.user.username}"
 
     class Meta:
         verbose_name: str = "Новость"
