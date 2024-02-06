@@ -7,6 +7,7 @@ from rest_framework.test import APITestCase
 
 from languages.tests.factories import LanguageFactory
 from .factories import UserFactory, PhotoFactory, NewsFactory
+from ..models import News, Photo
 
 
 @mark.django_db
@@ -14,7 +15,9 @@ class TestUserViewSet(APITestCase):
     def setUp(self):
         self.list_url: str = reverse("users-list")
         self.detail_url = partial(reverse, "users-detail")
-        self.get_my_page_url = reverse("users-get-my-page")
+        self.get_my_page_url: str = reverse("users-get-my-page")
+        self.add_news_url: str = reverse("users-create-news")
+        self.add_photo_url: str = reverse("users-create-photo")
 
     def test_user_list(self):
         users = [UserFactory() for _ in range(5)]
@@ -81,3 +84,50 @@ class TestUserViewSet(APITestCase):
         self.assertEqual(len(res_json["languages"]), len(languages))
         self.assertEqual(len(res_json["user_news"]), len(user_news))
         self.assertEqual(len(res_json["friends"]), len(user_friends))
+
+    def test_add_news(self):
+        user = UserFactory()
+        payload = {
+            "text": "new news",
+            "user": user.pk,
+            "created_at": "06.02.2024",
+            "image": "",
+        }
+
+        with self.assertNumQueries(0):
+            res = self.client.post(self.add_news_url, data=payload)
+
+        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        self.client.force_authenticate(user=user)
+
+        with self.assertNumQueries(2):
+            res = self.client.post(self.add_news_url, data=payload)
+
+        res_json = res.json()
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(res_json["user"], user.pk)
+        self.assertEqual(News.objects.count(), 1)
+
+    def test_add_photo(self):
+        user = UserFactory()
+        payload = {
+            "photo": "",
+            "user": user.pk,
+        }
+
+        with self.assertNumQueries(0):
+            res = self.client.post(self.add_photo_url, data=payload)
+
+        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        self.client.force_authenticate(user=user)
+
+        with self.assertNumQueries(2):
+            res = self.client.post(self.add_photo_url, data=payload)
+
+        res_json = res.json()
+        print(res_json)
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(res_json["user"], user.pk)
+        self.assertEqual(Photo.objects.count(), 1)

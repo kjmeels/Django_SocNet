@@ -92,3 +92,29 @@ class UserRetrieveSerializer(serializers.ModelSerializer):
         if obj.city:
             return obj.city.name
         return None
+
+
+class AddNewsSerializer(serializers.ModelSerializer):
+    """Сериализатор добавления новостей."""
+
+    class Meta:
+        model = News
+        fields = (
+            "id",
+            "text",
+            "user",
+            "created_at",
+            "image",
+        )
+
+
+class AddPhotoSerializer(serializers.ModelSerializer):
+    """Сериализатор добавления фото."""
+
+    class Meta:
+        model = Photo
+        fields = (
+            "id",
+            "photo",
+            "user",
+        )
