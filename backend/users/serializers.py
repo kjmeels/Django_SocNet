@@ -118,3 +118,30 @@ class AddPhotoSerializer(serializers.ModelSerializer):
             "photo",
             "user",
         )
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    """Сериализатор профиля прользователя."""
+
+    class Meta:
+        model = User
+        fields = (
+            "id",
+            "full_name",
+            "image",
+        )
+
+
+class GetNewsSerializer(serializers.ModelSerializer):
+    """Сериализатор на получение новостей (новостная лента)."""
+
+    user = UserProfileSerializer()
+
+    class Meta:
+        model = News
+        fields = (
+            "text",
+            "user",
+            "created_at",
+            "image",
+        )

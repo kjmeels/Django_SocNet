@@ -18,6 +18,7 @@ class TestUserViewSet(APITestCase):
         self.get_my_page_url: str = reverse("users-get-my-page")
         self.add_news_url: str = reverse("users-create-news")
         self.add_photo_url: str = reverse("users-create-photo")
+        self.get_news: str = reverse("users-get-news")
 
     def test_user_list(self):
         users = [UserFactory() for _ in range(5)]
@@ -25,6 +26,8 @@ class TestUserViewSet(APITestCase):
         languages = [LanguageFactory() for _ in range(5)]
         for user in users:
             user.languages.set(languages)
+
+        self.client.force_authenticate(user=users[0])
 
         with self.assertNumQueries(3):
             res = self.client.get(self.list_url)
@@ -45,6 +48,8 @@ class TestUserViewSet(APITestCase):
         for user in users:
             user.languages.set(languages)
             user.friends.set(user_friends)
+
+        self.client.force_authenticate(user=users[0])
 
         with self.assertNumQueries(5):
             res = self.client.get(self.detail_url(kwargs={"pk": users[2].id}))
@@ -70,7 +75,7 @@ class TestUserViewSet(APITestCase):
         with self.assertNumQueries(0):
             res = self.client.get(self.get_my_page_url)
 
-        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
 
         self.client.force_authenticate(user=user)
 
@@ -97,7 +102,7 @@ class TestUserViewSet(APITestCase):
         with self.assertNumQueries(0):
             res = self.client.post(self.add_news_url, data=payload)
 
-        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
 
         self.client.force_authenticate(user=user)
 
@@ -119,7 +124,7 @@ class TestUserViewSet(APITestCase):
         with self.assertNumQueries(0):
             res = self.client.post(self.add_photo_url, data=payload)
 
-        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
 
         self.client.force_authenticate(user=user)
 
@@ -127,7 +132,24 @@ class TestUserViewSet(APITestCase):
             res = self.client.post(self.add_photo_url, data=payload)
 
         res_json = res.json()
-        print(res_json)
+
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
         self.assertEqual(res_json["user"], user.pk)
         self.assertEqual(Photo.objects.count(), 1)
+
+    def test_get_news(self):
+        users = [UserFactory() for _ in range(10)]
+        user_news = [NewsFactory(user=user) for user in users for _ in range(10)]
+
+        self.client.force_authenticate(user=users[0])
+
+        users[0].friends.set(users[1:5])
+
+        with self.assertNumQueries(2):
+            res = self.client.get(self.get_news)
+
+        res_json = res.json()
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            len(res_json), len(user_news) / len(users) * (users[0].friends.count() + 1)
+        )
