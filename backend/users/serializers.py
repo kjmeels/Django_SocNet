@@ -1,7 +1,8 @@
 from rest_framework import serializers
 
 from languages.serializers import LanguageSerializer
-from .models import User, Photo, News
+from news.serializers import NewsSerializer
+from .models import User, Photo
 
 
 class PhotoSerializer(serializers.ModelSerializer):
@@ -37,19 +38,6 @@ class UserSerializer(serializers.ModelSerializer):
             "birth_date",
             "user_photos",
             "languages",
-        )
-
-
-class NewsSerializer(serializers.ModelSerializer):
-    """Сериализатор новостей."""
-
-    class Meta:
-        model = News
-        fields = (
-            "user",
-            "text",
-            "created_at",
-            "image",
         )
 
 
@@ -94,20 +82,6 @@ class UserRetrieveSerializer(serializers.ModelSerializer):
         return None
 
 
-class AddNewsSerializer(serializers.ModelSerializer):
-    """Сериализатор добавления новостей."""
-
-    class Meta:
-        model = News
-        fields = (
-            "id",
-            "text",
-            "user",
-            "created_at",
-            "image",
-        )
-
-
 class AddPhotoSerializer(serializers.ModelSerializer):
     """Сериализатор добавления фото."""
 
@@ -117,31 +91,4 @@ class AddPhotoSerializer(serializers.ModelSerializer):
             "id",
             "photo",
             "user",
-        )
-
-
-class UserProfileSerializer(serializers.ModelSerializer):
-    """Сериализатор профиля прользователя."""
-
-    class Meta:
-        model = User
-        fields = (
-            "id",
-            "full_name",
-            "image",
-        )
-
-
-class GetNewsSerializer(serializers.ModelSerializer):
-    """Сериализатор на получение новостей (новостная лента)."""
-
-    user = UserProfileSerializer()
-
-    class Meta:
-        model = News
-        fields = (
-            "text",
-            "user",
-            "created_at",
-            "image",
         )

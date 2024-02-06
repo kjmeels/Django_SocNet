@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     "users.apps.UserConfig",
     "cities.apps.CitiesConfig",
     "languages.apps.LanguagesConfig",
+    "news.apps.NewsConfig",
     # packages
     "rest_framework",
 ]

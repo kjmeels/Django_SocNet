@@ -2,7 +2,7 @@ from django.contrib.admin import register, ModelAdmin
 from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import gettext_lazy as _
 
-from .models import User, Photo, News
+from .models import User, Photo
 
 
 @register(User)
@@ -30,11 +30,6 @@ class UserAdmin(UserAdmin):
         ),
         (_("Important dates"), {"fields": ("last_login", "date_joined")}),
     )
-
-
-@register(News)
-class NewsAdmin(ModelAdmin):
-    pass
 
 
 @register(Photo)
