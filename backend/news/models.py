@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import UniqueConstraint
 
 
 class News(models.Model):
@@ -38,3 +39,4 @@ class Like(models.Model):
     class Meta:
         verbose_name: str = "Лайк"
         verbose_name_plural: str = "Лайки"
+        constraints = [UniqueConstraint(fields=("user", "new"), name="unique_user_new_together")]

@@ -1,9 +1,11 @@
+from django.db.models import Prefetch, Count
 from rest_framework import mixins, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
+from news.models import News
 from .models import User
 from .serializers import (
     UserSerializer,
@@ -32,7 +34,11 @@ class UserViewSet(
         if self.action in ["retrieve", "get_my_page"]:
             return (
                 User.objects.all()
-                .prefetch_related("user_photos", "languages", "user_news")
+                .prefetch_related(
+                    "user_photos",
+                    "languages",
+                    Prefetch("user_news", News.objects.all().annotate(like_count=Count("news"))),
+                )
                 .select_related("city")
             )
         return (

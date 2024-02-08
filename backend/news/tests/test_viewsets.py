@@ -1,3 +1,4 @@
+from django.db import IntegrityError
 from django.urls import reverse
 from pytest import mark
 from rest_framework import status
@@ -69,6 +70,14 @@ class TestNewsViewSet(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
         self.assertEqual(res_json["new"], new.pk)
         self.assertEqual(Like.objects.count(), 1)
+
+        try:
+            with self.assertNumQueries(2):
+                res = self.client.post(self.add_like_url, data={"new": new.pk})
+        except IntegrityError:
+            pass
+        except Exception:
+            self.fail("Не отработал UniqueConstraint")
 
     def test_destroy_like(self):
         user = UserFactory()

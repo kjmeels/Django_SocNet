@@ -7,6 +7,8 @@ from .models import News, Like
 class NewsSerializer(serializers.ModelSerializer):
     """Сериализатор новостей."""
 
+    like_count = serializers.IntegerField()
+
     class Meta:
         model = News
         fields = (
@@ -14,6 +16,7 @@ class NewsSerializer(serializers.ModelSerializer):
             "text",
             "created_at",
             "image",
+            "like_count",
         )
 
 
@@ -47,6 +50,7 @@ class GetNewsSerializer(serializers.ModelSerializer):
     """Сериализатор на получение новостей (новостная лента)."""
 
     user = UserProfileSerializer()
+    like_count = serializers.IntegerField()
 
     class Meta:
         model = News
@@ -55,6 +59,7 @@ class GetNewsSerializer(serializers.ModelSerializer):
             "user",
             "created_at",
             "image",
+            "like_count",
         )
 
 
@@ -69,11 +74,3 @@ class AddLikeSerializer(serializers.ModelSerializer):
             "user",
             "new",
         )
-
-
-# class DeleteLikeSerializer(serializers.ModelSerializer):
-#     """Сериализатор на удаление лайков"""
-#
-#     class Meta:
-#         model = Like
-#         fields = ()

@@ -1,3 +1,4 @@
+from django.db.models import Count
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import mixins, status
@@ -30,8 +31,9 @@ class NewsViewSet(
         if self.action == "destroy_like":
             return Like.objects.filter(user=self.request.user.id)
         return (
-            News.objects.all().select_related("user")
-            # .annotate(count("likes"))                          ?????????????
+            News.objects.all()
+            .select_related("user")
+            .annotate(like_count=Count("news"))
             .filter(
                 user__in=[
                     self.request.user.id,
@@ -68,3 +70,10 @@ class NewsViewSet(
 # todo почитать про Constrains unique и про валидацию данных в сериализаторах (def ..._validate)
 
 # UniqueConstraint создает уникальные ограничения , в нашем случае гарантирует, что пользователь сможет ставить только один лайк на каждую новость
+
+
+# todo Comments 1. модель комментариев 2.сериализатор и даль по аналогии с лайками
+# todo почитать
+
+
+# todo общие друзья / отправка уведомлений / регистрация - авторизация / фильтрация новостей
