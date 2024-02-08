@@ -2,7 +2,7 @@ from django.db import models
 
 
 class News(models.Model):
-    text = models.TextField(verbose_name="Добавить новость", null=True, blank=True)
+    text = models.TextField(verbose_name="Текст", null=True, blank=True)
     user = models.ForeignKey(
         "users.User",
         on_delete=models.CASCADE,
@@ -19,3 +19,22 @@ class News(models.Model):
     class Meta:
         verbose_name: str = "Новость"
         verbose_name_plural: str = "Новости"
+
+
+class Like(models.Model):
+    user = models.ForeignKey(
+        "users.User",
+        on_delete=models.CASCADE,
+        related_name="users",
+        verbose_name="Пользователь",
+    )
+    new = models.ForeignKey(
+        "news.News",
+        on_delete=models.CASCADE,
+        related_name="news",
+        verbose_name="Новости",
+    )
+
+    class Meta:
+        verbose_name: str = "Лайк"
+        verbose_name_plural: str = "Лайки"

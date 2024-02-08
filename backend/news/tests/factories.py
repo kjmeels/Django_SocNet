@@ -1,7 +1,7 @@
 import factory
 from factory.django import DjangoModelFactory
 
-from ..models import News
+from ..models import News, Like
 from users.tests.factories import UserFactory
 
 
@@ -13,3 +13,11 @@ class NewsFactory(DjangoModelFactory):
 
     class Meta:
         model = News
+
+
+class LikeFactory(DjangoModelFactory):
+    user = factory.SubFactory(UserFactory)
+    new = factory.SubFactory(NewsFactory)
+
+    class Meta:
+        model = Like

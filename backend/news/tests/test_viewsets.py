@@ -3,16 +3,17 @@ from pytest import mark
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from news.tests.factories import NewsFactory
+from news.tests.factories import NewsFactory, LikeFactory
 from .factories import UserFactory
-from ..models import News
+from ..models import News, Like
 
 
 @mark.django_db
 class TestNewsViewSet(APITestCase):
     def setUp(self):
-        # self.add_news_url: str = reverse("news-create-news")
         self.list_url: str = reverse("news-list")
+        self.add_like_url: str = reverse("news-add-like")
+        self.destroy_like_url: str = reverse("news-destroy-like")
 
     def test_create(self):
         user = UserFactory()
@@ -54,3 +55,30 @@ class TestNewsViewSet(APITestCase):
         self.assertEqual(
             len(res_json), len(user_news) / len(users) * (users[0].friends.count() + 1)
         )
+
+    def test_add_like(self):
+        user = UserFactory()
+        new = NewsFactory()
+
+        self.client.force_authenticate(user=user)
+
+        with self.assertNumQueries(2):
+            res = self.client.post(self.add_like_url, data={"new": new.pk})
+
+        res_json = res.json()
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(res_json["new"], new.pk)
+        self.assertEqual(Like.objects.count(), 1)
+
+    def test_destroy_like(self):
+        user = UserFactory()
+        new = NewsFactory()
+        like = LikeFactory(user=user, new=new)
+
+        self.client.force_authenticate(user=user)
+
+        with self.assertNumQueries(2):
+            res = self.client.delete(f"{self.destroy_like_url}?new={new.pk}")
+
+        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Like.objects.count(), 0)

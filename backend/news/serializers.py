@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from users.models import User
-from .models import News
+from .models import News, Like
 
 
 class NewsSerializer(serializers.ModelSerializer):
@@ -56,3 +56,24 @@ class GetNewsSerializer(serializers.ModelSerializer):
             "created_at",
             "image",
         )
+
+
+class AddLikeSerializer(serializers.ModelSerializer):
+    """Сериализатор на добавление лайков"""
+
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = Like
+        fields = (
+            "user",
+            "new",
+        )
+
+
+# class DeleteLikeSerializer(serializers.ModelSerializer):
+#     """Сериализатор на удаление лайков"""
+#
+#     class Meta:
+#         model = Like
+#         fields = ()
