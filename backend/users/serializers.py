@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from languages.serializers import LanguageSerializer
@@ -19,6 +20,7 @@ class UserSerializer(serializers.ModelSerializer):
     user_photos = PhotoSerializer(many=True)
     city = serializers.SerializerMethodField()
 
+    @extend_schema_field(serializers.CharField)
     def get_city(self, obj):
         if obj.city:
             return obj.city.name

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from users.models import User
-from .models import News, Like
+from .models import News, Like, Comment
 
 
 class NewsSerializer(serializers.ModelSerializer):
@@ -22,6 +22,8 @@ class NewsSerializer(serializers.ModelSerializer):
 
 class AddNewsSerializer(serializers.ModelSerializer):
     """Сериализатор добавления новостей."""
+
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
         model = News
@@ -64,7 +66,7 @@ class GetNewsSerializer(serializers.ModelSerializer):
 
 
 class AddLikeSerializer(serializers.ModelSerializer):
-    """Сериализатор на добавление лайков"""
+    """Сериализатор на добавление лайков."""
 
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
@@ -73,4 +75,53 @@ class AddLikeSerializer(serializers.ModelSerializer):
         fields = (
             "user",
             "new",
+        )
+
+
+class AddCommentSerializer(serializers.ModelSerializer):
+    """Сериализатор на добавление комментария."""
+
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = Comment
+        fields = (
+            "user",
+            "new",
+            "text",
+            "added_at",
+        )
+
+
+class GetCommentSerializer(serializers.ModelSerializer):
+    """Сериализатор на получение комментариев новости."""
+
+    user = UserProfileSerializer()
+
+    class Meta:
+        model = Comment
+        fields = (
+            "user",
+            "id",
+            "text",
+            "added_at",
+        )
+
+
+class GetNewsDetailSerializer(serializers.ModelSerializer):
+    """Сериализатор получения деталки новости."""
+
+    user = UserProfileSerializer()
+    like_count = serializers.IntegerField()
+    comments = GetCommentSerializer(many=True)
+
+    class Meta:
+        model = News
+        fields = (
+            "text",
+            "user",
+            "created_at",
+            "image",
+            "like_count",
+            "comments",
         )

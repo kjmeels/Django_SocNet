@@ -1,4 +1,5 @@
 from django.db.models import Prefetch, Count
+from drf_spectacular.utils import extend_schema_view, extend_schema
 from rest_framework import mixins, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -14,6 +15,23 @@ from .serializers import (
 )
 
 
+@extend_schema_view(
+    list=extend_schema(
+        summary="Получить список ползователей",
+    ),
+    create=extend_schema(
+        summary="Добавление нового пользователя",
+    ),
+    get_my_page=extend_schema(
+        summary="Просмотр 'Моей страницы'",
+    ),
+    create_photo=extend_schema(
+        summary="Добавление фото",
+    ),
+    retrieve=extend_schema(
+        summary="Просмотр определеннго пользователя",
+    ),
+)
 class UserViewSet(
     mixins.RetrieveModelMixin, mixins.ListModelMixin, mixins.CreateModelMixin, GenericViewSet
 ):

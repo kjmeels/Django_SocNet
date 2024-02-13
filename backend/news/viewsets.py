@@ -1,19 +1,53 @@
-from django.db.models import Count
+from django.db.models import Count, Prefetch
 from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import extend_schema, OpenApiParameter
+from drf_spectacular.utils import extend_schema, OpenApiParameter, extend_schema_view
 from rest_framework import mixins, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from news.models import News, Like
-from news.serializers import AddNewsSerializer, GetNewsSerializer, AddLikeSerializer
+from news.models import News, Like, Comment
+from news.serializers import (
+    AddNewsSerializer,
+    GetNewsSerializer,
+    AddLikeSerializer,
+    AddCommentSerializer,
+    GetNewsDetailSerializer,
+)
 
 
+@extend_schema_view(
+    list=extend_schema(
+        summary="Получить список новостей",
+    ),
+    create=extend_schema(
+        summary="Добавление новой новости",
+    ),
+    add_like=extend_schema(
+        summary="Добавление лайка",
+    ),
+    add_comment=extend_schema(
+        summary="Добавление комментария",
+    ),
+    destroy_comment=extend_schema(
+        summary="Удаление лайка",
+    ),
+    retrieve=extend_schema(
+        summary="Получение определенной новости",
+    ),
+    destroy_like=extend_schema(summary="Удаление лайка"),
+    destroy=extend_schema(
+        summary="Удаление определенной новости",
+    ),
+)
 @extend_schema(tags=["News"])
 class NewsViewSet(
-    mixins.ListModelMixin, mixins.CreateModelMixin, mixins.DestroyModelMixin, GenericViewSet
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    mixins.RetrieveModelMixin,
+    GenericViewSet,
 ):
     """ViewSet новостей"""
 
@@ -26,10 +60,31 @@ class NewsViewSet(
             return GetNewsSerializer
         elif self.action == "add_like":
             return AddLikeSerializer
+        elif self.action == "add_comment":
+            return AddCommentSerializer
+        elif self.action == "retrieve":
+            return GetNewsDetailSerializer
 
     def get_queryset(self):
         if self.action == "destroy_like":
             return Like.objects.filter(user=self.request.user.id)
+        elif self.action == "destroy_comment":
+            return Comment.objects.filter(user=self.request.user.id)
+        elif self.action == "retrieve":
+            return (
+                News.objects.all()
+                .select_related("user")
+                .prefetch_related(
+                    Prefetch("comments", Comment.objects.all().select_related("user"))
+                )
+                .annotate(like_count=Count("news"))
+                .filter(
+                    user__in=[
+                        self.request.user.id,
+                        *self.request.user.friends.values_list("id", flat=True),
+                    ]
+                )
+            )
         return (
             News.objects.all()
             .select_related("user")
@@ -65,6 +120,22 @@ class NewsViewSet(
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(status=status.HTTP_404_NOT_FOUND)
 
+    @action(detail=False, methods=["POST"])
+    def add_comment(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    @action(detail=True, methods=["DELETE"])
+    def destroy_comment(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance:
+            self.perform_destroy(instance)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
 
 # todo Likes 1. создать модель с полями (фк на новость, фк на пользователя), 2. сериализатор на создание и удаление лайков 3.во вьюсете добавиьб 2 экшена на создание (пост)и удаение (делит) 4 тесты
 # todo почитать про Constrains unique и про валидацию данных в сериализаторах (def ..._validate)
@@ -73,7 +144,8 @@ class NewsViewSet(
 
 
 # todo Comments 1. модель комментариев 2.сериализатор и даль по аналогии с лайками
-# todo почитать
+# todo почитать extend_schema/ extend_schema_field (swagger)
 
 
-# todo общие друзья / отправка уведомлений / регистрация - авторизация / фильтрация новостей
+# todo общие друзья / отправка уведомлений / регистрация - авторизация / фильтрация новостей / лайки под комментарии
+# разобрать куэрисет

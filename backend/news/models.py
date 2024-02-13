@@ -33,10 +33,28 @@ class Like(models.Model):
         "news.News",
         on_delete=models.CASCADE,
         related_name="news",
-        verbose_name="Новости",
+        verbose_name="Новость",
     )
 
     class Meta:
         verbose_name: str = "Лайк"
         verbose_name_plural: str = "Лайки"
         constraints = [UniqueConstraint(fields=("user", "new"), name="unique_user_new_together")]
+
+
+class Comment(models.Model):
+    user = models.ForeignKey(
+        "users.User",
+        on_delete=models.CASCADE,
+        related_name="comments",
+        verbose_name="Пользователь",
+    )
+    new = models.ForeignKey(
+        "news.News", on_delete=models.CASCADE, related_name="comments", verbose_name="Новость"
+    )
+    text = models.TextField(verbose_name="Текст")
+    added_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата добавления")
+
+    class Meta:
+        verbose_name: str = "Комментарий"
+        verbose_name_plural: str = "Комментарии"

@@ -4,9 +4,9 @@ from pytest import mark
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from news.tests.factories import NewsFactory, LikeFactory
+from news.tests.factories import NewsFactory, LikeFactory, CommentFactory
 from .factories import UserFactory
-from ..models import News, Like
+from ..models import News, Like, Comment
 
 
 @mark.django_db
@@ -15,13 +15,13 @@ class TestNewsViewSet(APITestCase):
         self.list_url: str = reverse("news-list")
         self.add_like_url: str = reverse("news-add-like")
         self.destroy_like_url: str = reverse("news-destroy-like")
+        self.add_comment_url: str = reverse("news-add-comment")
+        self.destroy_comment_url: str = reverse("news-destroy-comment")
 
     def test_create(self):
         user = UserFactory()
         payload = {
             "text": "new news",
-            "user": user.pk,
-            "created_at": "06.02.2024",
             "image": "",
         }
 
@@ -32,12 +32,11 @@ class TestNewsViewSet(APITestCase):
 
         self.client.force_authenticate(user=user)
 
-        with self.assertNumQueries(2):
+        with self.assertNumQueries(1):
             res = self.client.post(self.list_url, data=payload)
 
         res_json = res.json()
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(res_json["user"], user.pk)
         self.assertEqual(News.objects.count(), 1)
 
     def test_list(self):
@@ -91,3 +90,35 @@ class TestNewsViewSet(APITestCase):
 
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Like.objects.count(), 0)
+
+    def test_add_comment(self):
+        user = UserFactory()
+        new = NewsFactory()
+        payload = {
+            "new": new.pk,
+            "text": "comment text",
+        }
+
+        self.client.force_authenticate(user=user)
+
+        with self.assertNumQueries(2):
+            res = self.client.post(self.add_comment_url, data=payload)
+
+        res_json = res.json()
+        print(res_json)
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(res_json["new"], new.pk)
+        self.assertEqual(Comment.objects.count(), 1)
+
+    def test_destroy_comment(self):
+        user = UserFactory()
+        new = NewsFactory()
+        comment = CommentFactory(user=user, new=new)
+
+        self.client.force_authenticate(user=user)
+
+        with self.assertNumQueries(2):
+            res = self.client.delete(f"{self.destroy_comment_url}?new={new.pk}")
+
+        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Comment.objects.count(), 0)

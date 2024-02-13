@@ -1,7 +1,7 @@
 import factory
 from factory.django import DjangoModelFactory
 
-from ..models import News, Like
+from ..models import News, Like, Comment
 from users.tests.factories import UserFactory
 
 
@@ -21,3 +21,13 @@ class LikeFactory(DjangoModelFactory):
 
     class Meta:
         model = Like
+
+
+class CommentFactory(DjangoModelFactory):
+    user = factory.SubFactory(UserFactory)
+    new = factory.SubFactory(NewsFactory)
+    text = factory.Faker("word")
+    added_at = factory.Faker("date")
+
+    class Meta:
+        model = Comment
