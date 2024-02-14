@@ -1,5 +1,6 @@
 from django.db.models import Prefetch, Count
-from drf_spectacular.utils import extend_schema_view, extend_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiParameter
 from rest_framework import mixins, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -12,6 +13,8 @@ from .serializers import (
     UserSerializer,
     UserRetrieveSerializer,
     AddPhotoSerializer,
+    CommonFriendsSerializer,
+    UserFriendsSerializer,
 )
 
 
@@ -46,6 +49,8 @@ class UserViewSet(
             return UserRetrieveSerializer
         elif self.action == "create_photo":
             return AddPhotoSerializer
+        elif self.action == "get_common_friends":
+            return CommonFriendsSerializer
         return UserSerializer
 
     def get_queryset(self):
@@ -59,6 +64,8 @@ class UserViewSet(
                 )
                 .select_related("city")
             )
+        elif self.action == "get_common_friends":
+            return User.objects.all().prefetch_related("friends")
         return (
             User.objects.all().prefetch_related("user_photos", "languages").select_related("city")
         )
@@ -76,3 +83,25 @@ class UserViewSet(
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="user", description="Пользователь", required=True, type=OpenApiTypes.INT
+            )
+        ],
+    )
+    @action(detail=False, methods=["GET"])
+    def get_common_friends(self, request, *args, **kwargs):
+        me = self.get_queryset().filter(id=self.request.user.id).first()
+        person = self.get_queryset().filter(id=self.request.query_params.get("user")).first()
+
+        me_friends = set(me.friends.all().values_list("id", flat=True))
+        person_friends = set(person.friends.all().values_list("id", flat=True))
+
+        common_friends_ids = person_friends & me_friends
+        common_friends = self.get_queryset().filter(id__in=common_friends_ids)
+        data = {"count": len(common_friends_ids)}
+        serializer = self.get_serializer(data=data, context={"common_friends": common_friends})
+        serializer.is_valid(raise_exception=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

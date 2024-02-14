@@ -1,3 +1,5 @@
+from functools import partial
+
 from django.db import IntegrityError
 from django.urls import reverse
 from pytest import mark
@@ -16,7 +18,7 @@ class TestNewsViewSet(APITestCase):
         self.add_like_url: str = reverse("news-add-like")
         self.destroy_like_url: str = reverse("news-destroy-like")
         self.add_comment_url: str = reverse("news-add-comment")
-        self.destroy_comment_url: str = reverse("news-destroy-comment")
+        self.destroy_comment_url = partial(reverse, "news-destroy-comment")
 
     def test_create(self):
         user = UserFactory()
@@ -118,7 +120,7 @@ class TestNewsViewSet(APITestCase):
         self.client.force_authenticate(user=user)
 
         with self.assertNumQueries(2):
-            res = self.client.delete(f"{self.destroy_comment_url}?new={new.pk}")
+            res = self.client.delete(self.destroy_comment_url(kwargs={"pk": comment.id}))
 
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Comment.objects.count(), 0)

@@ -94,3 +94,14 @@ class AddPhotoSerializer(serializers.ModelSerializer):
             "photo",
             "user",
         )
+
+
+class CommonFriendsSerializer(serializers.Serializer):
+    """Сериализатор общих друзей."""
+
+    count = serializers.IntegerField()
+    common_friends = serializers.SerializerMethodField()
+
+    @extend_schema_field(UserFriendsSerializer(many=True))
+    def get_common_friends(self, obj):
+        return UserFriendsSerializer(self.context["common_friends"], many=True).data

@@ -18,6 +18,7 @@ class TestUserViewSet(APITestCase):
         self.detail_url = partial(reverse, "users-detail")
         self.get_my_page_url: str = reverse("users-get-my-page")
         self.add_photo_url: str = reverse("users-create-photo")
+        self.get_common_friends_url: str = reverse("users-get-common-friends")
 
     def test_user_list(self):
         users = [UserFactory() for _ in range(5)]
@@ -111,3 +112,23 @@ class TestUserViewSet(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
         self.assertEqual(res_json["user"], user.pk)
         self.assertEqual(Photo.objects.count(), 1)
+
+    def test_common_friends(self):
+        user1 = UserFactory()
+        user2 = UserFactory()
+        user_friends = [UserFactory() for _ in range(10)]
+
+        user1.friends.set(user_friends[:7])
+        user2.friends.set(user_friends[4:])
+
+        self.client.force_authenticate(user=user1)
+
+        with self.assertNumQueries(8):
+            res = self.client.get(self.get_common_friends_url, data={"user": user2.pk})
+
+        res_json = res.json()
+
+        print(res_json)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res_json["count"], 3)
+        self.assertEqual(len(res_json["common_friends"]), len(user_friends[4:7]))
