@@ -14,7 +14,7 @@ from .serializers import (
     UserRetrieveSerializer,
     AddPhotoSerializer,
     CommonFriendsSerializer,
-    UserFriendsSerializer,
+    AddMusicSerializer,
 )
 
 
@@ -51,6 +51,8 @@ class UserViewSet(
             return AddPhotoSerializer
         elif self.action == "get_common_friends":
             return CommonFriendsSerializer
+        elif self.action == "add_music":
+            return AddMusicSerializer
         return UserSerializer
 
     def get_queryset(self):
@@ -105,3 +107,11 @@ class UserViewSet(
         serializer = self.get_serializer(data=data, context={"common_friends": common_friends})
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=["POST"])
+    def add_music(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)

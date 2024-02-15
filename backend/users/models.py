@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractUser
+from django.core.validators import FileExtensionValidator
 from django.db import models
 
 from .constants import GenderChoices
@@ -41,7 +42,7 @@ class User(AbstractUser):
 
 
 class Photo(models.Model):
-    photo = models.ImageField(upload_to="u/u/p", verbose_name="Фото", null=True, blank=True)
+    photo = models.ImageField(upload_to="u/p/p", verbose_name="Фото", null=True, blank=True)
     user = models.ForeignKey(
         "users.User",
         on_delete=models.CASCADE,
@@ -55,3 +56,23 @@ class Photo(models.Model):
     class Meta:
         verbose_name: str = "Фотография"
         verbose_name_plural: str = "Фотографии"
+
+
+class Music(models.Model):
+    file = models.FileField(
+        upload_to="u/m/f",
+        verbose_name="Файл",
+        validators=[FileExtensionValidator(("mp3",))],
+        null=True,
+        blank=True,
+    )
+    title = models.CharField(max_length=50, verbose_name="Название песни")
+    author = models.CharField(max_length=50, verbose_name="Исполнитель")
+    image = models.ImageField(upload_to="u/m/i", verbose_name="Обложка", null=True, blank=True)
+
+    def __str__(self):
+        return f"file {self.title} - {self.author}"
+
+    class Meta:
+        verbose_name: str = "Песня"
+        verbose_name_plural: str = "Музыка"

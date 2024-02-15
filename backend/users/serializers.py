@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 from languages.serializers import LanguageSerializer
 from news.serializers import NewsSerializer
-from .models import User, Photo
+from .models import User, Photo, Music
 
 
 class PhotoSerializer(serializers.ModelSerializer):
@@ -105,3 +105,16 @@ class CommonFriendsSerializer(serializers.Serializer):
     @extend_schema_field(UserFriendsSerializer(many=True))
     def get_common_friends(self, obj):
         return UserFriendsSerializer(self.context["common_friends"], many=True).data
+
+
+class AddMusicSerializer(serializers.ModelSerializer):
+    """Сериализатор на добавление музыки."""
+
+    class Meta:
+        model = Music
+        fields = (
+            # "file",
+            "title",
+            "author",
+            "image",
+        )

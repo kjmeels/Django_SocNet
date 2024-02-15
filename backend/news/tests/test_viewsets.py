@@ -148,6 +148,7 @@ class TestNewsViewSet(APITestCase):
         try:
             with self.assertNumQueries(2):
                 res = self.client.post(self.add_like_to_comment_url, data={"comment": comment.pk})
+            self.fail("Не отработал UniqueConstraint")
         except IntegrityError:
             pass
         except Exception:
@@ -157,7 +158,7 @@ class TestNewsViewSet(APITestCase):
         user = UserFactory()
         new = NewsFactory()
         comment = CommentFactory(user=user, new=new)
-        commentlike = CommentLikeFactory(user=user, comment=comment)
+        comment_like = CommentLikeFactory(user=user, comment=comment)
 
         self.client.force_authenticate(user=user)
 

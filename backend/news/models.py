@@ -12,7 +12,7 @@ class News(models.Model):
         null=True,
     )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата добавления")
-    image = models.ImageField(upload_to="u/u/n", verbose_name="Фото", null=True, blank=True)
+    image = models.ImageField(upload_to="n/n/i", verbose_name="Фото", null=True, blank=True)
 
     def __str__(self):
         return f"Новость {self.id} - {self.user.username}"

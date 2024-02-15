@@ -4,7 +4,7 @@ from factory.django import DjangoModelFactory
 
 from cities.tests.factories import CityFactory
 from ..constants import GenderChoices
-from ..models import User, Photo
+from ..models import User, Photo, Music
 
 
 class UserFactory(DjangoModelFactory):
@@ -26,3 +26,13 @@ class PhotoFactory(DjangoModelFactory):
 
     class Meta:
         model = Photo
+
+
+class MusicFactory(DjangoModelFactory):
+    file = factory.django.FileField(filename="file.mp3")
+    title = factory.Faker("word")
+    author = factory.Faker("word")
+    image = factory.django.ImageField(filename="test.png")
+
+    class Meta:
+        model = Music

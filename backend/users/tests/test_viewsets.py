@@ -7,8 +7,8 @@ from rest_framework.test import APITestCase
 
 from languages.tests.factories import LanguageFactory
 from news.tests.factories import NewsFactory
-from .factories import UserFactory, PhotoFactory
-from ..models import Photo
+from .factories import UserFactory, PhotoFactory, MusicFactory
+from ..models import Photo, Music
 
 
 @mark.django_db
@@ -19,6 +19,7 @@ class TestUserViewSet(APITestCase):
         self.get_my_page_url: str = reverse("users-get-my-page")
         self.add_photo_url: str = reverse("users-create-photo")
         self.get_common_friends_url: str = reverse("users-get-common-friends")
+        self.add_music_url: str = reverse("users-add-music")
 
     def test_user_list(self):
         users = [UserFactory() for _ in range(5)]
@@ -128,7 +129,25 @@ class TestUserViewSet(APITestCase):
 
         res_json = res.json()
 
-        print(res_json)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res_json["count"], 3)
         self.assertEqual(len(res_json["common_friends"]), len(user_friends[4:7]))
+
+    def test_add_music(self):
+        user = UserFactory()
+        payload = {
+            "user": user.pk,
+            # "file": "",
+            "title": "Patron",
+            "author": "Miyagi",
+            # "image": "",
+        }
+
+        self.client.force_authenticate(user=user)
+
+        with self.assertNumQueries(1):
+            res = self.client.post(self.add_music_url, data=payload)
+
+        res_json = res.json()
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Music.objects.count(), 1)
