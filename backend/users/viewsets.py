@@ -60,7 +60,7 @@ class UserViewSet(
                 .prefetch_related(
                     "user_photos",
                     "languages",
-                    Prefetch("user_news", News.objects.all().annotate(like_count=Count("news"))),
+                    Prefetch("user_news", News.objects.all().annotate(like_count=Count("likes"))),
                 )
                 .select_related("city")
             )

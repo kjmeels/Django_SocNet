@@ -26,13 +26,13 @@ class Like(models.Model):
     user = models.ForeignKey(
         "users.User",
         on_delete=models.CASCADE,
-        related_name="users",
+        related_name="likes",
         verbose_name="Пользователь",
     )
     new = models.ForeignKey(
         "news.News",
         on_delete=models.CASCADE,
-        related_name="news",
+        related_name="likes",
         verbose_name="Новость",
     )
 
@@ -58,3 +58,17 @@ class Comment(models.Model):
     class Meta:
         verbose_name: str = "Комментарий"
         verbose_name_plural: str = "Комментарии"
+
+
+class CommentLike(models.Model):
+    user = models.ForeignKey("users.User", on_delete=models.CASCADE, related_name="comment_likes")
+    comment = models.ForeignKey(
+        "news.Comment", on_delete=models.CASCADE, related_name="comment_likes"
+    )
+
+    class Meta:
+        verbose_name: str = "Лайк на комментарии"
+        verbose_name_plural: str = "Лайки на комментариях"
+        constraints = [
+            UniqueConstraint(fields=("user", "comment"), name="unique_user_comment_together")
+        ]

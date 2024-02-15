@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from users.models import User
-from .models import News, Like, Comment
+from .models import News, Like, Comment, CommentLike
 
 
 class NewsSerializer(serializers.ModelSerializer):
@@ -53,16 +53,11 @@ class GetNewsSerializer(serializers.ModelSerializer):
 
     user = UserProfileSerializer()
     like_count = serializers.IntegerField()
+    comment_count = serializers.IntegerField()
 
     class Meta:
         model = News
-        fields = (
-            "text",
-            "user",
-            "created_at",
-            "image",
-            "like_count",
-        )
+        fields = ("text", "user", "created_at", "image", "like_count", "comment_count")
 
 
 class AddLikeSerializer(serializers.ModelSerializer):
@@ -97,6 +92,7 @@ class GetCommentSerializer(serializers.ModelSerializer):
     """Сериализатор на получение комментариев новости."""
 
     user = UserProfileSerializer()
+    comment_like_count = serializers.IntegerField()
 
     class Meta:
         model = Comment
@@ -105,6 +101,7 @@ class GetCommentSerializer(serializers.ModelSerializer):
             "id",
             "text",
             "added_at",
+            "comment_like_count",
         )
 
 
@@ -124,4 +121,17 @@ class GetNewsDetailSerializer(serializers.ModelSerializer):
             "image",
             "like_count",
             "comments",
+        )
+
+
+class AddLikeToCommentSerializer(serializers.ModelSerializer):
+    """Сериализатор на добавление лайка комментарию."""
+
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = CommentLike
+        fields = (
+            "user",
+            "comment",
         )

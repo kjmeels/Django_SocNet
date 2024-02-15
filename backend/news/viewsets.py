@@ -7,13 +7,14 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from news.models import News, Like, Comment
+from news.models import News, Like, Comment, CommentLike
 from news.serializers import (
     AddNewsSerializer,
     GetNewsSerializer,
     AddLikeSerializer,
     AddCommentSerializer,
     GetNewsDetailSerializer,
+    AddLikeToCommentSerializer,
 )
 
 
@@ -64,20 +65,29 @@ class NewsViewSet(
             return AddCommentSerializer
         elif self.action == "retrieve":
             return GetNewsDetailSerializer
+        elif self.action == "add_like_to_comment":
+            return AddLikeToCommentSerializer
 
     def get_queryset(self):
         if self.action == "destroy_like":
             return Like.objects.filter(user=self.request.user.id)
         elif self.action == "destroy_comment":
             return Comment.objects.filter(user=self.request.user.id)
+        elif self.action == "destroy_like_to_comment":
+            return CommentLike.objects.filter(user=self.request.user.id)
         elif self.action == "retrieve":
             return (
                 News.objects.all()
                 .select_related("user")
                 .prefetch_related(
-                    Prefetch("comments", Comment.objects.all().select_related("user"))
+                    Prefetch(
+                        "comments",
+                        Comment.objects.all()
+                        .select_related("user")
+                        .annotate(comment_like_count=Count("comment_likes")),
+                    )
                 )
-                .annotate(like_count=Count("news"))
+                .annotate(like_count=Count("likes"))
                 .filter(
                     user__in=[
                         self.request.user.id,
@@ -88,7 +98,8 @@ class NewsViewSet(
         return (
             News.objects.all()
             .select_related("user")
-            .annotate(like_count=Count("news"))
+            .annotate(comment_count=Count("comments"))
+            .annotate(like_count=Count("likes"))
             .filter(
                 user__in=[
                     self.request.user.id,
@@ -131,6 +142,29 @@ class NewsViewSet(
     @action(detail=True, methods=["DELETE"])
     def destroy_comment(self, request, *args, **kwargs):
         instance = self.get_object()
+        if instance:
+            self.perform_destroy(instance)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    @action(detail=False, methods=["POST"])
+    def add_like_to_comment(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="comment", description="Комментарий", required=True, type=OpenApiTypes.INT
+            )
+        ]
+    )
+    @action(detail=False, methods=["DELETE"])
+    def destroy_like_to_comment(self, request, *args, **kwargs):
+        instance = self.get_queryset().filter(comment=request.query_params.get("comment")).first()
         if instance:
             self.perform_destroy(instance)
             return Response(status=status.HTTP_204_NO_CONTENT)
