@@ -8,7 +8,7 @@ from rest_framework.test import APITestCase
 from languages.tests.factories import LanguageFactory
 from news.tests.factories import NewsFactory
 from .factories import UserFactory, PhotoFactory, MusicFactory
-from ..models import Photo, Music
+from ..models import Photo, Music, User
 
 
 @mark.django_db
@@ -20,6 +20,9 @@ class TestUserViewSet(APITestCase):
         self.add_photo_url: str = reverse("users-create-photo")
         self.get_common_friends_url: str = reverse("users-get-common-friends")
         self.add_music_url: str = reverse("users-add-music")
+        self.get_music_url: str = reverse("users-get-music")
+        self.get_user_music_url: str = reverse("users-get-user-music")
+        self.add_music_to_user_url: str = reverse("users-add-music-to-user")
 
     def test_user_list(self):
         users = [UserFactory() for _ in range(5)]
@@ -52,7 +55,7 @@ class TestUserViewSet(APITestCase):
 
         self.client.force_authenticate(user=users[0])
 
-        with self.assertNumQueries(5):
+        with self.assertNumQueries(6):
             res = self.client.get(self.detail_url(kwargs={"pk": users[2].id}))
 
         res_json = res.json()
@@ -80,7 +83,7 @@ class TestUserViewSet(APITestCase):
 
         self.client.force_authenticate(user=user)
 
-        with self.assertNumQueries(5):
+        with self.assertNumQueries(6):
             res = self.client.get(self.get_my_page_url)
 
         res_json = res.json()
@@ -151,3 +154,43 @@ class TestUserViewSet(APITestCase):
         res_json = res.json()
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Music.objects.count(), 1)
+
+    def test_get_music(self):
+        user = UserFactory()
+        music = [MusicFactory() for _ in range(10)]
+
+        self.client.force_authenticate(user=user)
+
+        with self.assertNumQueries(1):
+            res = self.client.get(self.get_music_url)
+
+        res_json = res.json()
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(res_json), len(music))
+
+    def test_get_user_music(self):
+        user = UserFactory()
+        music = [MusicFactory() for _ in range(10)]
+
+        user.music.set(music)
+
+        self.client.force_authenticate(user=user)
+
+        with self.assertNumQueries(1):
+            res = self.client.get(self.get_user_music_url)
+
+        res_json = res.json()
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(res_json), len(music))
+
+    def test_add_music_to_user(self):
+        user = UserFactory()
+        music = MusicFactory()
+
+        self.client.force_authenticate(user=user)
+
+        with self.assertNumQueries(2):
+            res = self.client.post(f"{self.add_music_to_user_url}?music={music.pk}")
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(User.objects.get(id=user.pk).music.count(), 1)

@@ -8,13 +8,14 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from news.models import News
-from .models import User
+from .models import User, Music
 from .serializers import (
     UserSerializer,
     UserRetrieveSerializer,
     AddPhotoSerializer,
     CommonFriendsSerializer,
     AddMusicSerializer,
+    GetMusicSerializer,
 )
 
 
@@ -53,6 +54,10 @@ class UserViewSet(
             return CommonFriendsSerializer
         elif self.action == "add_music":
             return AddMusicSerializer
+        elif self.action == "get_music":
+            return GetMusicSerializer
+        elif self.action == "get_user_music":
+            return GetMusicSerializer
         return UserSerializer
 
     def get_queryset(self):
@@ -62,12 +67,19 @@ class UserViewSet(
                 .prefetch_related(
                     "user_photos",
                     "languages",
+                    "music",
                     Prefetch("user_news", News.objects.all().annotate(like_count=Count("likes"))),
                 )
                 .select_related("city")
             )
         elif self.action == "get_common_friends":
             return User.objects.all().prefetch_related("friends")
+        elif self.action == "get_music":
+            return Music.objects.all()
+        elif self.action == "get_user_music":
+            return Music.objects.all()
+        elif self.action == "add_music_to_user":
+            return Music.objects.all()
         return (
             User.objects.all().prefetch_related("user_photos", "languages").select_related("city")
         )
@@ -115,3 +127,31 @@ class UserViewSet(
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    @action(detail=False, methods=["GET"])
+    def get_music(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=["GET"])
+    def get_user_music(self, request, *args, **kwargs):
+        queryset = self.get_queryset().filter(id__in=self.request.user.music.all())
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="music", description="Музыка", required=True, type=OpenApiTypes.INT
+            )
+        ],
+    )
+    @action(detail=False, methods=["POST"])
+    def add_music_to_user(self, request, *args, **kwargs):
+        music = self.get_queryset().filter(id=self.request.query_params.get("music")).first()
+        if not music:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        user = request.user
+        user.music.add(music)
+        return Response(status=status.HTTP_201_CREATED)

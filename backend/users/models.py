@@ -32,6 +32,9 @@ class User(AbstractUser):
         related_name="user_friends",
         blank=True,
     )
+    music = models.ManyToManyField(
+        "users.Music", verbose_name="Моя музыка", related_name="users", blank=True
+    )
 
     def __str__(self):
         return self.username

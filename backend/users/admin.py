@@ -2,7 +2,7 @@ from django.contrib.admin import register, ModelAdmin
 from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import gettext_lazy as _
 
-from .models import User, Photo
+from .models import User, Photo, Music
 
 
 @register(User)
@@ -34,4 +34,9 @@ class UserAdmin(UserAdmin):
 
 @register(Photo)
 class PhotoAdmin(ModelAdmin):
+    pass
+
+
+@register(Music)
+class MusicAdmin(ModelAdmin):
     pass

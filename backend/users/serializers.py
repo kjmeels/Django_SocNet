@@ -53,6 +53,19 @@ class UserFriendsSerializer(serializers.ModelSerializer):
         )
 
 
+class GetMusicSerializer(serializers.ModelSerializer):
+    """Сериализатор на получение списка музыки."""
+
+    class Meta:
+        model = Music
+        fields = (
+            "id",
+            "title",
+            "author",
+            "image",
+        )
+
+
 class UserRetrieveSerializer(serializers.ModelSerializer):
     """Сериализатор пользователя с новостями."""
 
@@ -61,6 +74,7 @@ class UserRetrieveSerializer(serializers.ModelSerializer):
     languages = LanguageSerializer(many=True)
     user_news = NewsSerializer(many=True)
     friends = UserFriendsSerializer(many=True)
+    music = GetMusicSerializer(many=True)
 
     class Meta:
         model = User
@@ -76,6 +90,7 @@ class UserRetrieveSerializer(serializers.ModelSerializer):
             "languages",
             "user_news",
             "friends",
+            "music",
         )
 
     def get_city(self, obj):
