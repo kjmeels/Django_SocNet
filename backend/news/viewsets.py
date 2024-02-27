@@ -90,8 +90,10 @@ class NewsViewSet(
                 .annotate(like_count=Count("likes"))
                 .filter(
                     user__in=[
-                        self.request.user.id,
-                        *self.request.user.friends.values_list("id", flat=True),
+                        self.request.user.id,  # берем новости пользователя
+                        *self.request.user.friends.values_list(
+                            "id", flat=True
+                        ),  # берем новости его друзей
                     ]
                 )
             )
@@ -181,5 +183,3 @@ class NewsViewSet(
 
 # todo почитать django filters
 # todo генерация музыки (пишет, что неверный формат добавления файла)
-
-# todo получение всей музыки, добавление музыки пользователю

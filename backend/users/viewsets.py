@@ -6,8 +6,10 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
+from django_filters import rest_framework as filters
 
 from news.models import News
+from .filters import UserFilter
 from .models import User, Music
 from .serializers import (
     UserSerializer,
@@ -42,6 +44,8 @@ class UserViewSet(
     """ViewSet пользователя"""
 
     permission_classes = [IsAuthenticated]
+    filter_backends = (filters.DjangoFilterBackend,)
+    filterset_class = UserFilter
 
     def get_serializer_class(self):
         if self.action == "retrieve":
@@ -116,7 +120,9 @@ class UserViewSet(
         common_friends_ids = person_friends & me_friends
         common_friends = self.get_queryset().filter(id__in=common_friends_ids)
         data = {"count": len(common_friends_ids)}
-        serializer = self.get_serializer(data=data, context={"common_friends": common_friends})
+        serializer = self.get_serializer(
+            data=data, context={"common_friends": common_friends}
+        )  # используем контекст для пробрасывания данных в сериализатор с возможностью дальнейшего ихменения до валидации
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

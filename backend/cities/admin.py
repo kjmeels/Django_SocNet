@@ -5,4 +5,4 @@ from .models import City
 
 @register(City)
 class CityAdmin(ModelAdmin):
-    pass
+    prepopulated_fields = {"slug": ("name",)}
