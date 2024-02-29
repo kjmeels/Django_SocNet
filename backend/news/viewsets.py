@@ -3,10 +3,13 @@ from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema, OpenApiParameter, extend_schema_view
 from rest_framework import mixins, status
 from rest_framework.decorators import action
+from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
+from django_filters import rest_framework as filters
 
+from news.filters import NewFilter
 from news.models import News, Like, Comment, CommentLike
 from news.serializers import (
     AddNewsSerializer,
@@ -53,6 +56,8 @@ class NewsViewSet(
     """ViewSet новостей"""
 
     permission_classes = [IsAuthenticated]
+    filter_backends = (filters.DjangoFilterBackend,)
+    filterset_class = NewFilter
 
     def get_serializer_class(self):
         if self.action == "create":
@@ -143,7 +148,8 @@ class NewsViewSet(
 
     @action(detail=True, methods=["DELETE"])
     def destroy_comment(self, request, *args, **kwargs):
-        instance = self.get_object()
+        # instance = self.get_queryset().filter(pk=self.kwargs["pk"]).first()
+        instance = get_object_or_404(self.get_queryset(), pk=kwargs["pk"])
         if instance:
             self.perform_destroy(instance)
             return Response(status=status.HTTP_204_NO_CONTENT)
