@@ -7,63 +7,115 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('languages', '0001_initial'),
-        ('cities', '0001_initial'),
-        ('users', '0002_user_age_user_birth_date_user_city_user_gender_and_more'),
+        ("languages", "0001_initial"),
+        ("cities", "0001_initial"),
+        ("users", "0002_user_age_user_birth_date_user_city_user_gender_and_more"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Music',
+            name="Music",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('file', models.FileField(blank=True, null=True, upload_to='u/m/f', validators=[django.core.validators.FileExtensionValidator(('mp3',))], verbose_name='Файл')),
-                ('title', models.CharField(max_length=50, verbose_name='Название песни')),
-                ('author', models.CharField(max_length=50, verbose_name='Исполнитель')),
-                ('image', models.ImageField(blank=True, null=True, upload_to='u/m/i', verbose_name='Обложка')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                (
+                    "file",
+                    models.FileField(
+                        blank=True,
+                        null=True,
+                        upload_to="u/m/f",
+                        validators=[django.core.validators.FileExtensionValidator(("mp3",))],
+                        verbose_name="Файл",
+                    ),
+                ),
+                ("title", models.CharField(max_length=50, verbose_name="Название песни")),
+                ("author", models.CharField(max_length=50, verbose_name="Исполнитель")),
+                (
+                    "image",
+                    models.ImageField(
+                        blank=True, null=True, upload_to="u/m/i", verbose_name="Обложка"
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Песня',
-                'verbose_name_plural': 'Музыка',
+                "verbose_name": "Песня",
+                "verbose_name_plural": "Музыка",
             },
         ),
         migrations.AddField(
-            model_name='user',
-            name='friends',
-            field=models.ManyToManyField(blank=True, related_name='user_friends', to=settings.AUTH_USER_MODEL, verbose_name='Друзья'),
+            model_name="user",
+            name="friends",
+            field=models.ManyToManyField(
+                blank=True,
+                related_name="user_friends",
+                to=settings.AUTH_USER_MODEL,
+                verbose_name="Друзья",
+            ),
         ),
         migrations.AddField(
-            model_name='user',
-            name='languages',
-            field=models.ManyToManyField(blank=True, related_name='users', to='languages.language', verbose_name='Языки'),
+            model_name="user",
+            name="languages",
+            field=models.ManyToManyField(
+                blank=True, related_name="users", to="languages.language", verbose_name="Языки"
+            ),
         ),
         migrations.AlterField(
-            model_name='user',
-            name='city',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='users', to='cities.city', verbose_name='Город'),
+            model_name="user",
+            name="city",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="users",
+                to="cities.city",
+                verbose_name="Город",
+            ),
         ),
         migrations.AlterField(
-            model_name='user',
-            name='full_name',
-            field=models.CharField(max_length=50, verbose_name='Псевдоним'),
+            model_name="user",
+            name="full_name",
+            field=models.CharField(max_length=50, verbose_name="Псевдоним"),
         ),
         migrations.CreateModel(
-            name='Photo',
+            name="Photo",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('photo', models.ImageField(blank=True, null=True, upload_to='u/p/p', verbose_name='Фото')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='user_photos', to=settings.AUTH_USER_MODEL, verbose_name='Пользователь')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                (
+                    "photo",
+                    models.ImageField(
+                        blank=True, null=True, upload_to="u/p/p", verbose_name="Фото"
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="user_photos",
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="Пользователь",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Фотография',
-                'verbose_name_plural': 'Фотографии',
+                "verbose_name": "Фотография",
+                "verbose_name_plural": "Фотографии",
             },
         ),
         migrations.AddField(
-            model_name='user',
-            name='music',
-            field=models.ManyToManyField(blank=True, related_name='users', to='users.music', verbose_name='Моя музыка'),
+            model_name="user",
+            name="music",
+            field=models.ManyToManyField(
+                blank=True, related_name="users", to="users.music", verbose_name="Моя музыка"
+            ),
         ),
     ]

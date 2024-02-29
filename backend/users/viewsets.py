@@ -122,7 +122,7 @@ class UserViewSet(
         data = {"count": len(common_friends_ids)}
         serializer = self.get_serializer(
             data=data, context={"common_friends": common_friends}
-        )  # используем контекст для пробрасывания данных в сериализатор с возможностью дальнейшего ихменения до валидации
+        )  # используем контекст для пробрасывания данных в сериализатор с возможностью дальнейшего изменения до валидации
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

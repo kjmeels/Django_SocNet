@@ -5,6 +5,7 @@ from pytest import mark
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+from cities.tests.factories import CityFactory
 from languages.tests.factories import LanguageFactory
 from news.tests.factories import NewsFactory
 from .factories import UserFactory, PhotoFactory, MusicFactory
@@ -194,3 +195,78 @@ class TestUserViewSet(APITestCase):
 
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
         self.assertEqual(User.objects.get(id=user.pk).music.count(), 1)
+
+    def test_age_filter(self):
+        user1 = UserFactory(age=20)
+        user2 = UserFactory(age=19)
+        user3 = UserFactory(age=23)
+
+        self.client.force_authenticate(user=user1)
+
+        with self.assertNumQueries(3):
+            res = self.client.get(f"{self.list_url}?age_min=18&age_max=25")
+            # res = self.client.get(self.list_url, data={"age_min":18, "age_max":25})
+
+            res_json = res.json()
+            res_age_list = [user["age"] for user in res_json]
+            self.assertEqual(res.status_code, status.HTTP_200_OK)
+            self.assertTrue(all([user_age > 18 for user_age in res_age_list]))
+            self.assertTrue(all([user_age < 25 for user_age in res_age_list]))
+
+    def test_gender_filter(self):
+        user1 = UserFactory(gender="Male")
+        user2 = UserFactory(gender="Female")
+        user3 = UserFactory(gender="Male")
+
+        self.client.force_authenticate(user=user1)
+
+        with self.assertNumQueries(3):
+            res = self.client.get(f"{self.list_url}?gender=Male")
+
+        res_json = res.json()
+        res_gender_list = [user["gender"] for user in res_json]
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertTrue(all([user_gender == "Male" for user_gender in res_gender_list]))
+
+    def test_city_filter(self):
+        cities = [CityFactory() for _ in range(3)]
+        user1 = UserFactory()
+        users = [UserFactory(city=city) for city in cities]
+
+        self.client.force_authenticate(user=user1)
+
+        with self.assertNumQueries(3):
+            res = self.client.get(f"{self.list_url}?city={cities[0].slug}")
+
+        res_json = res.json()
+        res_city_list = [user["city"] for user in res_json]
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertTrue(all([user_city == cities[0].name for user_city in res_city_list]))
+
+    def test_languages_filter(self):
+        languages = [LanguageFactory() for _ in range(4)]
+        users = [UserFactory() for _ in range(3)]
+
+        for n, user in enumerate(users):
+            user.languages.set(languages[n : n + 2])
+
+        self.client.force_authenticate(user=users[0])
+
+        with self.assertNumQueries(3):
+            res = self.client.get(f"{self.list_url}?language={languages[1].language_name}")
+
+        res_json = res.json()
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(res_json), 2)
+        res_language_list = [
+            [lang["language_name"] for lang in user["languages"]] for user in res_json
+        ]
+
+        # res_json = [user, user, user, ...]
+        # user = {..., ..., "languages": [{"language_name": "eng"}, {"language_name": "rus"}], ..., ..., ...}
+
+        self.assertTrue(
+            all(
+                [languages[1].language_name in user_language for user_language in res_language_list]
+            )
+        )

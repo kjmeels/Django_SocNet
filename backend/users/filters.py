@@ -10,7 +10,7 @@ class UserFilter(filters.FilterSet):
     # age__lt = filters.NumberFilter(field_name="age", lookup_expr="lt")
     city = filters.CharFilter(field_name="city__slug")
     gender = filters.ChoiceFilter(choices=GenderChoices.choices)
-    languages = filters.CharFilter(field_name="languages__language_name")
+    language = filters.CharFilter(field_name="languages__language_name")
 
     class Meta:
         model = User
