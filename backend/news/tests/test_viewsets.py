@@ -7,6 +7,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from news.tests.factories import NewsFactory, LikeFactory, CommentFactory, CommentLikeFactory
+from notifications.models import Notification
 from .factories import UserFactory
 from ..models import News, Like, Comment, CommentLike
 
@@ -36,7 +37,7 @@ class TestNewsViewSet(APITestCase):
 
         self.client.force_authenticate(user=user)
 
-        with self.assertNumQueries(1):
+        with self.assertNumQueries(2):
             res = self.client.post(self.list_url, data=payload)
 
         res_json = res.json()
@@ -167,3 +168,15 @@ class TestNewsViewSet(APITestCase):
 
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(CommentLike.objects.count(), 0)
+
+    def test_signals(self):
+        user = UserFactory()
+        friends = [UserFactory() for _ in range(5)]
+        new = NewsFactory(user=user)
+
+        user.friends.set(friends)
+
+        self.assertEqual(Notification.objects.count(), 0)
+
+        new.save()
+        self.assertEqual(Notification.objects.count(), len(friends))

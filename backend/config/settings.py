@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     "cities.apps.CitiesConfig",
     "languages.apps.LanguagesConfig",
     "news.apps.NewsConfig",
+    "notifications.apps.NotificationConfig",
     # packages
     "rest_framework",
     "drf_spectacular",
