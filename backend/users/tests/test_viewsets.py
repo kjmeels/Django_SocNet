@@ -141,10 +141,8 @@ class TestUserViewSet(APITestCase):
         user = UserFactory()
         payload = {
             "user": user.pk,
-            # "file": "",
             "title": "Patron",
             "author": "Miyagi",
-            # "image": "",
         }
 
         self.client.force_authenticate(user=user)
@@ -205,7 +203,6 @@ class TestUserViewSet(APITestCase):
 
         with self.assertNumQueries(3):
             res = self.client.get(f"{self.list_url}?age_min=18&age_max=25")
-            # res = self.client.get(self.list_url, data={"age_min":18, "age_max":25})
 
             res_json = res.json()
             res_age_list = [user["age"] for user in res_json]
@@ -261,9 +258,6 @@ class TestUserViewSet(APITestCase):
         res_language_list = [
             [lang["language_name"] for lang in user["languages"]] for user in res_json
         ]
-
-        # res_json = [user, user, user, ...]
-        # user = {..., ..., "languages": [{"language_name": "eng"}, {"language_name": "rus"}], ..., ..., ...}
 
         self.assertTrue(
             all(

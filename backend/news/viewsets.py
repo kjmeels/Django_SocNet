@@ -148,7 +148,6 @@ class NewsViewSet(
 
     @action(detail=True, methods=["DELETE"])
     def destroy_comment(self, request, *args, **kwargs):
-        # instance = self.get_queryset().filter(pk=self.kwargs["pk"]).first()
         instance = get_object_or_404(self.get_queryset(), pk=kwargs["pk"])
         if instance:
             self.perform_destroy(instance)

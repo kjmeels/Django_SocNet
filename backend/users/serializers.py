@@ -128,7 +128,6 @@ class AddMusicSerializer(serializers.ModelSerializer):
     class Meta:
         model = Music
         fields = (
-            # "file",
             "title",
             "author",
             "image",

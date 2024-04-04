@@ -6,8 +6,6 @@ from users.models import User
 
 class UserFilter(filters.FilterSet):
     age = filters.RangeFilter(field_name="age")
-    # age__gt = filters.NumberFilter(field_name="age", lookup_expr="gt")
-    # age__lt = filters.NumberFilter(field_name="age", lookup_expr="lt")
     city = filters.CharFilter(field_name="city__slug")
     gender = filters.ChoiceFilter(choices=GenderChoices.choices)
     language = filters.CharFilter(field_name="languages__language_name")
