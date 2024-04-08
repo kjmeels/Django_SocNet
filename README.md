@@ -13,9 +13,6 @@ POSTGRES_NAME=postgres
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres
 POSTGRES_PORT=5432
-TLS_MODE=off
-HTPASSWD_NODE=off
-HTPASSWD=off
 ```
 
 ## Third party packages:

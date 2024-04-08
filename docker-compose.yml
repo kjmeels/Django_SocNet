@@ -51,12 +51,24 @@ services:
       - 80:80
       - 443:443
     restart: unless-stopped
-    environment:
-      - TLS_MODE
-      - HTPASSWD_NODE
-      - HTPASSWD
+
+  redis:
+    image: redis:6.2-alpine
+    volumes:
+      - redisdata:/data
+
+  celery:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    command: celery -A config worker -l info -c 1 -n celery@dats.com -Q celery
+    depends_on:
+      - db
+      - redis
+    <<: *app_environment
 
 volumes:
+  redisdata:
   postgresdata:
   nginx_cache:
   static:
